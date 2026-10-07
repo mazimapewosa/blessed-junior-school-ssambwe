@@ -28,7 +28,30 @@
 .grid .card:nth-child(13){background:linear-gradient(135deg,#fef9c3,#facc15)}
 .grid .card:nth-child(14){background:linear-gradient(135deg,#ede9fe,#c4b5fd)}
 @media(max-width:700px){.hero,.hero-slides,.hero img,.hero-slides img{height:330px}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.grid .card{min-height:76px;padding:9px}.grid .card .num{font-size:18px}}
-</style></head><body><div id="app"></div><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script>
+
+<style>
+.statement-banner{text-align:center;border:1px solid #1f2937;border-radius:8px;padding:14px;margin:10px 0 14px;background:#eef3f8}.statement-banner b{display:block;font-size:17px;letter-spacing:.5px}.statement-banner span{display:block;margin-top:4px;color:#52606d;font-size:12px}.account-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0}.account-summary>div{border:1px solid #9aa4b2;border-radius:6px;padding:12px;background:#f8fafc}.account-summary .key-summary{border:2px solid #374151;background:#edf2f7}.account-summary span{display:block;font-size:12px;color:#52606d}.account-summary strong{display:block;font-size:18px;margin-top:5px}.account-title{text-align:center;border:1px solid #374151;background:#e9eef3;padding:10px 0;margin:22px 0 0;font-size:15px;letter-spacing:.5px}.account-table-wrap{max-width:900px;margin:0 auto}.account-table{width:100%;border-collapse:collapse}.account-table th,.account-table td{border:1px solid #6b7280;padding:9px 10px}.account-table thead th{background:#dfe6ed}.account-table tbody tr:nth-child(even){background:#f8fafc}.account-table .amount{text-align:right;white-space:nowrap}.account-table tr.total th,.account-table tr.total td{border-top:2px solid #374151;font-weight:800;background:#edf2f7}.account-table tr.grand-total th,.account-table tr.grand-total td{border-top:3px double #111827;border-bottom:3px double #111827;font-weight:900;background:#e2e8f0;font-size:15px}.expense-group{cursor:default}.expandable-row{cursor:pointer}.expandable-row:hover{background:#eef3f8}.expand-icon{display:inline-block;width:16px;font-weight:800}.financial-detail td{padding:0!important;background:#f7f9fb}.detail-box{padding:8px 12px 12px}.detail-table{width:100%;border-collapse:collapse;background:#fff}.detail-table th,.detail-table td{border:1px solid #b8c0ca;padding:7px 8px}.detail-table thead th{background:#edf1f5}.detail-table tbody tr:nth-child(even){background:#fafafa}.detail-table tfoot th{background:#eef2f6;font-weight:800}.statement-note{margin-top:14px;padding:11px;border-left:4px solid #6b7280;border:1px solid #c5ccd4;background:#f8fafc;font-size:12px}.detail-heading{margin-top:24px;border-bottom:2px solid #374151;padding-bottom:7px}.statement-detail-table{width:100%;border-collapse:collapse}.statement-detail-table th,.statement-detail-table td{border:1px solid #9aa4b2;padding:8px}.statement-detail-table thead th{background:#dfe6ed}.statement-detail-table tbody tr:nth-child(even){background:#f8fafc}.statement-detail-table tfoot th{border-top:2px solid #374151;background:#edf2f7;font-weight:900}.account-formulas{margin-top:16px;padding:12px;border:1px solid #c5ccd4;background:#f8fafc}.financial-statement .amount{text-align:right;white-space:nowrap}.financial-statement .muted{color:#6b7280}
+@media(max-width:700px){.account-summary{grid-template-columns:1fr}.account-table{font-size:13px}.detail-table,.statement-detail-table{font-size:12px}.account-table-wrap{overflow-x:auto}}
+@media print{.account-title{break-after:avoid}.account-table-wrap{page-break-inside:avoid}.account-formulas{font-size:11px}.account-summary{grid-template-columns:repeat(3,1fr)}}
+</style>
+</style>
+<style>
+.continuous-account-table{min-width:860px}
+.continuous-account-table th,.continuous-account-table td{border:1px solid #6b7280;padding:9px 10px;vertical-align:top}
+.continuous-account-table thead th{background:#dbe4ee;color:#172033;font-weight:800}
+.continuous-account-table .section-row th{background:#cbd5e1;text-align:center;font-size:14px;letter-spacing:.6px;border-top:2px solid #374151}
+.continuous-account-table .section-row td{background:#cbd5e1}
+.continuous-account-table .key-total th,.continuous-account-table .key-total td{background:#eef2f7;font-weight:900;border-top:2px solid #374151}
+.continuous-account-table .total th,.continuous-account-table .total td{background:#e2e8f0;font-weight:900;border-top:2px solid #374151}
+.continuous-account-table .grand-total th,.continuous-account-table .grand-total td{background:#dbe4ee;font-weight:900;font-size:15px;border-top:3px double #111827;border-bottom:3px double #111827}
+.continuous-account-table .expense-group td:nth-child(2){background:#fbfdff}
+.expense-detail-line{display:flex;justify-content:space-between;gap:18px;border-bottom:1px dotted #cbd5e1;padding:3px 0;font-size:12px}
+.expense-detail-line:last-child{border-bottom:0}
+.continuous-account-table .amount{white-space:nowrap;text-align:right}
+@media(max-width:700px){.continuous-account-table{font-size:12px}.continuous-account-table th,.continuous-account-table td{padding:7px}.expense-detail-line{font-size:11px}}
+@media print{.continuous-account-table{min-width:0;font-size:10px}.continuous-account-table th,.continuous-account-table td{padding:5px}.financial-detail{display:none!important}.expense-detail-line{font-size:9px}}
+</style>
+</head><body><div id="app"></div><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script>
 const SB_URL='https://gchmrrdfxoorqmkunxei.supabase.co',SB_KEY='sb_publishable_b68jXTon4erqI0xrAlonWw_wkNGswHe';const db=supabase.createClient(SB_URL,SB_KEY);const contentId='content';let settings=null,currentUser=null,profile=null,classes=[],years=[],terms=[],fees=[],expenseCats=[],students=[],enrollments=[],staffRows=[];const app=document.getElementById('app');
 const esc=s=>String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));const money=n=>'UGX '+Number(n||0).toLocaleString();const today=()=>new Date().toISOString().slice(0,10);const errMsg=e=>e?.message||e?.error_description||'An unexpected error occurred.';
 async function init(){const {data:{session}}=await db.auth.getSession();if(session){currentUser=session.user;await loadProfile();await loadData();renderShell();home()}else renderLogin();db.auth.onAuthStateChange(async(_e,s)=>{if(s&&!currentUser){currentUser=s.user;await loadProfile();await loadData();renderShell();home()}if(!s){currentUser=null;profile=null;renderLogin()}})}
@@ -623,13 +646,130 @@ async function deleteBudgetItem(id){if(profile?.role!=='director')return alert('
 
 function renderPrintReport(title,bodyHtml,backFn='reportsPage'){content.innerHTML=`<div class="panel report-print-area"><div class="actions no-print"><button class="secondary" onclick="${backFn}()">← Back</button><button class="primary" onclick="window.print()">🖨️ Print / Save as PDF</button></div><div class="report-head"><h1>${esc(settings.school_name||'Blessed Junior School')}</h1><h2>${esc(title)}</h2><div>${new Date().toLocaleString()}</div></div>${bodyHtml}</div>`;window.scrollTo({top:0,behavior:'smooth'});setTimeout(()=>{try{window.print()}catch(e){}},250)}
 function printBudgetReport(items,summary){const rows=(items||[]).map(x=>`<tr><td>${esc(x.item_name||'Budget Item')}</td><td>${esc(x.expenditure_categories?.name||'')}</td><td>${esc(x.budget_period||'')}</td><td>${x.quantity||1}</td><td>${money(x.unit_cost||0)}</td><td>${money(Number(x.amount||0)||Number(x.quantity||0)*Number(x.unit_cost||0))}</td></tr>`).join('');const body=`<div class="grid"><div class="card"><b>Net Sales</b><div class="num">${money(summary.netSales||0)}</div></div><div class="card"><b>Cost of Sales</b><div class="num">${money((summary.termPayroll||0)+(summary.previousSalaryOutstanding||0))}</div></div><div class="card"><b>Gross Profit</b><div class="num">${money((summary.netSales||0)-((summary.termPayroll||0)+(summary.previousSalaryOutstanding||0)))}</div></div><div class="card"><b>Other Budget</b><div class="num">${money(summary.otherBudget||0)}</div></div><div class="card"><b>Projected Result</b><div class="num">${money(summary.projectedResult||0)}</div></div></div><div class="table-wrap"><table><tr><th>Item</th><th>Category</th><th>Period</th><th>Qty</th><th>Unit Cost</th><th>Total</th></tr>${rows||'<tr><td colspan="6">No budget items.</td></tr>'}</table></div>`;renderPrintReport('OPERATION BUDGET',body,'budgetPage')}
-async function incomePage(){const r=await db.from('cash_book_entries').select('*').eq('is_reversed',false).order('entry_date',{ascending:true});let inc=0,ex=0;(r.data||[]).forEach(x=>x.entry_type==='debit'?inc+=+x.amount:ex+=+x.amount);content.innerHTML=`<div class="panel"><h2>Income Statement</h2><div class="grid"><div class="card"><div class="label">Income</div><div class="num">${money(inc)}</div></div><div class="card"><div class="label">Expenses</div><div class="num">${money(ex)}</div></div><div class="card"><div class="label">Surplus / (Deficit)</div><div class="num">${money(inc-ex)}</div></div></div><p class="small">This statement is based on posted, non-reversed cash-book entries. Detailed income/expense categorisation can be filtered in Reports.</p><button onclick="window.print()">Print</button></div>`}
+async function getFinancialStatementData(){
+  await loadData(true);
+  const ay=years.find(y=>y.is_current)||years.find(y=>Number(y.year)===Number(settings?.current_academic_year||0))||years[0];
+  const ayId=ay?.id||'00000000-0000-0000-0000-000000000000';
+  const [inv,cb,exp]=await Promise.all([
+    db.from('fee_invoice_summary').select('total_billed,total_paid,outstanding,status,academic_year_id').eq('academic_year_id',ayId).neq('status','cancelled'),
+    db.from('cash_book_entries').select('*').eq('is_reversed',false).order('entry_date',{ascending:true}),
+    db.from('expenditures').select('*,expenditure_categories(name)').eq('is_reversed',false).order('expenditure_date',{ascending:true})
+  ]);
+  if(inv.error)return {error:inv.error};
+  if(cb.error)return {error:cb.error};
+  if(exp.error)return {error:exp.error};
+
+  // Outstanding is defined directly from the money expected and money actually paid by students.
+  // We deliberately do NOT trust a pre-calculated outstanding field here, so the statement
+  // always follows: Outstanding = Money Expected - Money Paid So Far.
+  const grossSales=(inv.data||[]).reduce((a,x)=>a+Number(x.total_billed||0),0);
+
+  // NET SALES must reflect the money actually received from students so far.
+  // Do not depend on the invoice-summary view's total_paid value, because a
+  // stale/empty summary must not make NET SALES show zero when payments exist.
+  const feePay=await db.from('fee_payments').select('amount,is_reversed').eq('is_reversed',false);
+  if(feePay.error)return {error:feePay.error};
+  const totalPaid=(feePay.data||[]).reduce((a,x)=>a+Number(x.amount||0),0);
+  const outstanding=Math.max(grossSales-totalPaid,0);
+  const netSales=Math.max(grossSales-outstanding,0);
+
+  const activeStaff=staffRows.filter(s=>s.active!==false);
+  const termPayroll=activeStaff.reduce((a,s)=>a+(Number(s.salary_amount||0)+Number(s.allowances||0))*3,0);
+  const previousSalaryOutstanding=activeStaff.reduce((a,s)=>a+Number(s.outstanding_salary||0),0);
+  const costOfSales=termPayroll+previousSalaryOutstanding;
+  const grossProfit=netSales-costOfSales;
+
+  const credits=(cb.data||[]).filter(x=>x.entry_type==='credit');
+  const expMap=Object.fromEntries((exp.data||[]).map(x=>[x.id,x]));
+  const loanIds=credits.filter(x=>x.source_type==='loan_repayment'&&x.source_id).map(x=>x.source_id);
+  const salIds=credits.filter(x=>x.source_type==='salary_payment'&&x.source_id).map(x=>x.source_id);
+  const [loanR,salR]=await Promise.all([
+    loanIds.length?db.from('loan_repayments').select('id,loan_id,loans(loan_ref,lender)').in('id',loanIds):Promise.resolve({data:[]}),
+    salIds.length?db.from('salary_payments').select('id,staff_id,staff(full_name,staff_id)').in('id',salIds):Promise.resolve({data:[]})
+  ]);
+  if(loanR.error)return {error:loanR.error};
+  if(salR.error)return {error:salR.error};
+  const loanMap=Object.fromEntries((loanR.data||[]).map(x=>[x.id,x]));
+  const salMap=Object.fromEntries((salR.data||[]).map(x=>[x.id,x]));
+
+  const expenditureRows=credits.map(x=>{
+    const linked=x.source_type==='expenditure'&&x.source_id?expMap[x.source_id]:null;
+    const loan= x.source_type==='loan_repayment'&&x.source_id ? loanMap[x.source_id]?.loans : null;
+    const salary=x.source_type==='salary_payment'&&x.source_id ? salMap[x.source_id]?.staff : null;
+    let category=linked?.expenditure_categories?.name||x.category||'';
+    let description=linked?.description||x.description||'';
+    if(x.source_type==='salary_payment'){category='Staff Salaries';description=salary?.full_name?`Salary — ${salary.full_name}`:'Staff Salary Payment';}
+    if(x.source_type==='loan_repayment'){category='Loan Repayments';description=loan?.loan_ref?`Loan ${loan.loan_ref}${loan.lender?' — '+loan.lender:''}`:(loan?.lender?`Loan Repayment — ${loan.lender}`:'Loan Repayment');}
+    return {id:x.id,source_type:x.source_type||'',source_id:x.source_id||'',expenditure_date:x.entry_date,category,description,voucher_no:linked?.voucher_no||x.reference_no||'',amount:Number(x.amount||0),salary,loan};
+  });
+
+  const grouped={};
+  expenditureRows.forEach(x=>{
+    let key=x.source_type==='salary_payment'?'Staff Salaries':x.source_type==='loan_repayment'?'Loan Repayments':(x.category||x.description||'Other Expenses').trim();
+    if(!grouped[key])grouped[key]={key,item:key,amount:0,rows:[]};
+    grouped[key].amount+=x.amount; grouped[key].rows.push(x);
+  });
+  const expenseGroups=Object.values(grouped).sort((a,b)=>b.amount-a.amount);
+  const totalExpenditure=expenditureRows.reduce((a,x)=>a+Number(x.amount||0),0);
+  const netProfitLoss=grossProfit-totalExpenditure;
+
+  const salaryDetail=expenditureRows.filter(x=>x.source_type==='salary_payment');
+  const loanDetail=expenditureRows.filter(x=>x.source_type==='loan_repayment');
+  const costOfSalesStaff=activeStaff.map(s=>({name:s.full_name||'Staff Member',staff_id:s.staff_id||'',monthly:Number(s.salary_amount||0)+Number(s.allowances||0),threeMonths:(Number(s.salary_amount||0)+Number(s.allowances||0))*3,outstanding:Number(s.outstanding_salary||0),total:(Number(s.salary_amount||0)+Number(s.allowances||0))*3+Number(s.outstanding_salary||0)}));
+  return {grossSales,totalPaid,outstanding,netSales,termPayroll,previousSalaryOutstanding,costOfSales,grossProfit,expenditureRows,expenseGroups,totalExpenditure,netProfitLoss,salaryDetail,loanDetail,costOfSalesStaff,academicYear:ay?.year||settings?.current_academic_year||''};
+}
+function financialStatementHtml(d,printMode=false){
+  const detailRows=(rows,kind)=>rows.map(x=>{
+    const who=kind==='salary'?(x.salary?.full_name||x.description||'Staff Salary'):(x.loan?.loan_ref?`${x.loan.loan_ref}${x.loan.lender?' — '+x.loan.lender:''}`:(x.description||'Loan Repayment'));
+    const extra=kind==='salary'?(x.salary?.staff_id?`Staff ID: ${x.salary.staff_id}`:''):(x.loan?.lender?`Lender: ${x.loan.lender}`:'');
+    return `<tr><td>${esc(x.expenditure_date||'')}</td><td>${esc(who)}</td><td>${esc(extra)}</td><td>${esc(x.voucher_no||'')}</td><td class="amount">${money(x.amount||0)}</td></tr>`;
+  }).join('');
+  const expenseItemLines=(rows)=>rows.map(x=>`<div class="expense-detail-line"><span>${esc(x.description||x.category||'Expense')}</span><b>${money(x.amount||0)}</b></div>`).join('');
+  // Consolidate similar expense categories into one line. The middle column
+  // contains the consolidated amount for that category; the final column is
+  // reserved for summary figures only. Underlying transactions remain intact.
+  const statementExpenseRows=(d.expenseGroups||[]).map(g=>`<tr class="expense-item-row"><td>${esc(g.item||'Expense')}</td><td class="amount expense-item-amount">${money(g.amount||0)}</td><td class="amount"></td></tr>`).join('');
+  const salaryCostDetail=(d.costOfSalesStaff||[]).map(x=>`<tr><td>${esc(x.name)}</td><td>${esc(x.staff_id||'')}</td><td class="amount">${money(x.monthly)}</td><td class="amount">${money(x.threeMonths)}</td><td class="amount">${money(x.outstanding)}</td><td class="amount">${money(x.total)}</td></tr>`).join('');
+  const continuousRows=`
+    <tr class="section-row"><th colspan="3">TRADING ACCOUNT</th></tr>
+    <tr><td>Gross Sales — Total Money Expected</td><td></td><td class="amount"><b>${money(d.grossSales)}</b></td></tr>
+    <tr><td>Less: Outstanding — Expected less Money Paid So Far</td><td></td><td class="amount">${money(d.outstanding)}</td></tr>
+    <tr class="key-total"><th>NET SALES</th><td></td><th class="amount">${money(d.netSales)}</th></tr>
+    <tr class="expandable-row" onclick="toggleFinancialDetail('costOfSalesDetail')"><td><span class="expand-icon" id="icon_costOfSalesDetail">▶</span> Less: Cost of Sales <span class="small muted">(click to expand staff salaries)</span></td><td></td><td class="amount">${money(d.costOfSales)}</td></tr>
+    <tr id="costOfSalesDetail" class="financial-detail" style="display:none"><td colspan="3"><div class="detail-box"><table class="detail-table"><thead><tr><th>Staff / Recipient</th><th>Staff ID</th><th class="amount">Monthly Salary + Allowances</th><th class="amount">3-Month Salary</th><th class="amount">Outstanding Salary</th><th class="amount">Cost of Sales</th></tr></thead><tbody>${salaryCostDetail||'<tr><td colspan="6">No active staff records found.</td></tr>'}</tbody><tfoot><tr><th colspan="5">Cost of Sales Total</th><th class="amount">${money(d.costOfSales)}</th></tr></tfoot></table></div></td></tr>
+    <tr class="key-total"><th>GROSS PROFIT</th><td></td><th class="amount">${money(d.grossProfit)}</th></tr>
+    <tr class="section-row"><th colspan="3">PROFIT AND LOSS ACCOUNT</th></tr>
+    <tr><td>Gross Profit brought down</td><td></td><td class="amount"><b>${money(d.grossProfit)}</b></td></tr>
+    ${statementExpenseRows||'<tr><td>No expenditure items recorded</td><td class="amount">0</td><td class="amount"></td></tr>'}
+    <tr class="total"><th>TOTAL EXPENSES</th><td></td><th class="amount">${money(d.totalExpenditure)}</th></tr>
+    <tr class="grand-total"><th>NET PROFIT / (LOSS)</th><td></td><th class="amount">${money(d.netProfitLoss)}</th></tr>`;
+  return `<div class="financial-statement">
+    <div class="statement-banner"><b>FINANCIAL STATEMENT — ACADEMIC YEAR ${esc(d.academicYear)}</b><span>Trading Account and Profit &amp; Loss Account presented as one continuous statement</span></div>
+    <div class="account-summary"><div><span>Gross Sales / Total Money Expected</span><strong>${money(d.grossSales)}</strong></div><div><span>Money Paid So Far by Students</span><strong>${money(d.totalPaid)}</strong></div><div class="key-summary"><span>NET SALES</span><strong>${money(d.netSales)}</strong></div></div>
+    <div class="account-table-wrap"><table class="account-table continuous-account-table"><thead><tr><th>PARTICULARS</th><th>AMOUNT</th><th class="amount">FINAL AMOUNT (UGX)</th></tr></thead><tbody>${continuousRows}</tbody></table></div>
+    <div class="statement-note"><b>Presentation:</b> Trading Account and Profit &amp; Loss Account are attached together in one continuous table. Each expenditure item is listed separately under Particulars, its individual amount is recorded in the middle Amount column, and the final column is reserved for summary figures such as TOTAL EXPENSES and NET PROFIT / (LOSS). Underlying transaction records are not merged or changed.</div>
+    <h3 class="detail-heading">EXPENDITURE SUPPORTING SCHEDULE</h3><div class="table-wrap"><table class="statement-detail-table"><thead><tr><th>Date</th><th>Category / Item</th><th>Description</th><th>Voucher / Reference</th><th class="amount">Amount (UGX)</th></tr></thead><tbody>${(d.expenditureRows||[]).map(x=>`<tr><td>${esc(x.expenditure_date||'')}</td><td>${esc(x.category||'')}</td><td>${esc(x.description||'')}</td><td>${esc(x.voucher_no||'')}</td><td class="amount">${money(x.amount||0)}</td></tr>`).join('')||'<tr><td colspan="5">No posted expenditure items found.</td></tr>'}</tbody><tfoot><tr><th colspan="4">TOTAL EXPENDITURE</th><th class="amount">${money(d.totalExpenditure)}</th></tr></tfoot></table></div>
+    <div class="account-formulas"><b>Accounting formulas:</b> Outstanding = Money Expected − Money Paid So Far; Net Sales = Gross Sales − Outstanding; Gross Profit = Net Sales − Cost of Sales; Net Profit / (Loss) = Gross Profit − Total Expenses.</div>
+    <div class="actions no-print"><button class="primary" onclick="printFinancialStatement()">🖨️ Print / Save as PDF</button></div>
+  </div>`;
+}
+function toggleFinancialDetail(id){const row=document.getElementById(id),icon=document.getElementById('icon_'+id);if(!row)return;const open=row.style.display==='none';row.style.display=open?'table-row':'none';if(icon)icon.textContent=open?'▼':'▶';}
+async function incomePage(){
+  const d=await getFinancialStatementData();
+  if(d.error)return content.innerHTML=`<div class="panel"><div class="notice err">${esc(errMsg(d.error))}</div></div>`;
+  content.innerHTML=`<div class="panel"><h2>Financial Statement</h2><p class="small">Income statement based on the school's current expected fees, outstanding balances, cost of sales and posted expenditure items.</p>${financialStatementHtml(d)}</div>`;
+}
+async function printFinancialStatement(){
+  const d=await getFinancialStatementData();
+  if(d.error)return alert(errMsg(d.error));
+  renderPrintReport('FINANCIAL STATEMENT',financialStatementHtml(d,true),'incomePage');
+}
 async function reportsPage(){content.innerHTML=`<div class="panel"><h2>Reports</h2><div class="notice">Choose a report from the dropdown. Each report opens with its detailed information and can be printed or saved as a PDF using the browser's print dialog.</div><div class="form"><label>Report<select id="reportSelect"><option value="student_statement">Student Account Statement</option><option value="class_balances">Outstanding Fees by Class</option><option value="payment_register">Student Payment Register</option><option value="cash_book">Cash Book Detailed Report</option><option value="income_statement">Income Statement</option><option value="operation_budget">Operation Budget</option><option value="expenditure_register">Expenditure Register</option><option value="staff_salary">Staff Salary / Unpaid Salary</option><option value="loan_register">Loan Register</option></select></label><select id="repStudent"><option value="">Select student (for Student Account Statement)</option>${students.map(s=>`<option value="${s.id}">${esc(s.full_name)} (${esc(s.admission_no)})</option>`).join('')}</select></div><div class="actions"><button class="primary" onclick="openSelectedReport()">Open Report</button></div><h3>Available Reports</h3><div class="grid"><div class="card">Student account statements</div><div class="card">Outstanding fees by class</div><div class="card">Student payment register</div><div class="card">Detailed cash book</div><div class="card">Income statement</div><div class="card">Operation budget</div><div class="card">Expenditure register</div><div class="card">Staff salary report</div><div class="card">Loan register</div></div></div>`}
 async function openSelectedReport(){const type=document.getElementById('reportSelect')?.value;if(type==='student_statement'){const id=document.getElementById('repStudent')?.value;if(!id)return alert('Select a student first.');return studentStatement(id)}if(type==='class_balances')return classBalancesReport();if(type==='payment_register')return paymentRegisterReport();if(type==='cash_book')return cashBookReportFromReports();if(type==='income_statement')return incomeReportFromReports();if(type==='operation_budget'){await budgetPage();return printBudgetReport(window.currentBudgetItems||[],window.currentBudgetSummary||{})}if(type==='expenditure_register')return expenditureReport();if(type==='staff_salary')return staffSalaryReport();if(type==='loan_register')return loanRegisterReport()}
 async function classBalancesReport(){const data=await paymentClassData();const grouped={};data.forEach(x=>{const k=x.class_name;if(!grouped[k])grouped[k]={expected:0,paid:0,outstanding:0,students:0};grouped[k].expected+=x.expected;grouped[k].paid+=x.paid;grouped[k].outstanding+=x.outstanding;grouped[k].students++});const rows=Object.entries(grouped).map(([k,v])=>`<tr><td>${esc(k)}</td><td>${v.students}</td><td>${money(v.expected)}</td><td>${money(v.paid)}</td><td>${money(v.outstanding)}</td></tr>`).join('');renderPrintReport('OUTSTANDING FEES BY CLASS',`<div class="table-wrap"><table><tr><th>Class</th><th>Students</th><th>Expected</th><th>Paid</th><th>Outstanding</th></tr>${rows||'<tr><td colspan="5">No class balance data.</td></tr>'}</table></div>`)}
 async function paymentRegisterReport(){const r=await db.from('fee_payments').select('*,fee_items(name)').order('payment_date',{ascending:true});if(r.error)return alert(errMsg(r.error));const rows=(r.data||[]).map(p=>{const e=enrollments.find(e=>e.id===p.student_enrollment_id),s=students.find(s=>s.id===e?.student_id),c=classes.find(c=>c.id===e?.class_id);return `<tr><td>${p.payment_date||''}</td><td>${esc(p.receipt_no||'')}</td><td>${esc(s?.full_name||'')}</td><td>${esc(c?.name||'')}</td><td>${esc(p.fee_items?.name||'')}</td><td>${esc(p.payment_method||'')}</td><td>${money(p.amount||0)}</td><td>${p.is_reversed?'Reversed':'Posted'}</td></tr>`}).join('');renderPrintReport('STUDENT PAYMENT REGISTER',`<div class="table-wrap"><table><tr><th>Date</th><th>Receipt</th><th>Student</th><th>Class</th><th>Fee</th><th>Method</th><th>Amount</th><th>Status</th></tr>${rows||'<tr><td colspan="8">No payments found.</td></tr>'}</table></div>`)}
 async function cashBookReportFromReports(){await cashPage();setTimeout(()=>printCashBookReport(),100)}
-async function incomeReportFromReports(){const r=await db.from('cash_book_entries').select('*').eq('is_reversed',false).order('entry_date',{ascending:true});if(r.error)return alert(errMsg(r.error));let inc=0,ex=0;const rows=(r.data||[]).map(x=>{if(x.entry_type==='debit')inc+=Number(x.amount||0);else ex+=Number(x.amount||0);return `<tr><td>${x.entry_date||''}</td><td>${esc(x.description||'')}</td><td>${esc(x.reference_no||'')}</td><td>${x.entry_type==='debit'?money(x.amount):''}</td><td>${x.entry_type!=='debit'?money(x.amount):''}</td></tr>`}).join('');renderPrintReport('INCOME STATEMENT',`<div class="grid"><div class="card"><b>Income</b><div class="num">${money(inc)}</div></div><div class="card"><b>Expenses</b><div class="num">${money(ex)}</div></div><div class="card"><b>Surplus / (Deficit)</b><div class="num">${money(inc-ex)}</div></div></div><div class="table-wrap"><table><tr><th>Date</th><th>Details</th><th>Reference</th><th>Income</th><th>Expense</th></tr>${rows}</table></div>`)}
+async function incomeReportFromReports(){return printFinancialStatement()}
 async function expenditureReport(){const r=await db.from('expenditures').select('*').order('expenditure_date',{ascending:true});if(r.error)return alert(errMsg(r.error));const rows=(r.data||[]).map(x=>`<tr><td>${x.expenditure_date||''}</td><td>${esc(x.description||x.item_name||'')}</td><td>${esc(x.category||'')}</td><td>${money(x.amount||0)}</td></tr>`).join('');renderPrintReport('EXPENDITURE REGISTER',`<div class="table-wrap"><table><tr><th>Date</th><th>Description</th><th>Category</th><th>Amount</th></tr>${rows||'<tr><td colspan="4">No expenditure records found.</td></tr>'}</table></div>`)}
 async function staffSalaryReport(){const rows=staffRows.map(s=>`<tr><td>${esc(s.full_name||'')}</td><td>${money(Number(s.salary_amount||0)+Number(s.allowances||0))}</td><td>${money(s.outstanding_salary||0)}</td><td>${s.active===false?'Inactive':'Active'}</td></tr>`).join('');renderPrintReport('STAFF SALARY / UNPAID SALARY',`<div class="table-wrap"><table><tr><th>Staff</th><th>Salary + Allowances</th><th>Outstanding Salary</th><th>Status</th></tr>${rows||'<tr><td colspan="4">No staff records found.</td></tr>'}</table></div>`)}
 async function loanRegisterReport(){const r=await db.from('loans').select('*').order('created_at',{ascending:true});if(r.error)return alert(errMsg(r.error));const rows=(r.data||[]).map(x=>`<tr><td>${esc(x.loan_no||x.id||'')}</td><td>${esc(x.borrower_name||x.member_name||'')}</td><td>${money(x.original_amount||x.amount||0)}</td><td>${money(x.amount_repaid||0)}</td><td>${money(x.outstanding_balance||0)}</td><td>${esc(x.status||'')}</td></tr>`).join('');renderPrintReport('LOAN REGISTER',`<div class="table-wrap"><table><tr><th>Loan</th><th>Borrower</th><th>Principal</th><th>Repaid</th><th>Outstanding</th><th>Status</th></tr>${rows||'<tr><td colspan="6">No loan records found.</td></tr>'}</table></div>`)}
