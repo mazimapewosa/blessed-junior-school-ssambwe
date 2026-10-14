@@ -51,6 +51,27 @@
 @media(max-width:700px){.continuous-account-table{font-size:12px}.continuous-account-table th,.continuous-account-table td{padding:7px}.expense-detail-line{font-size:11px}}
 @media print{.continuous-account-table{min-width:0;font-size:10px}.continuous-account-table th,.continuous-account-table td{padding:5px}.financial-detail{display:none!important}.expense-detail-line{font-size:9px}}
 </style>
+
+<style>
+.loan-ledger .statement-banner{text-align:center;border:2px solid #000080;border-radius:8px;padding:14px;margin:10px 0 14px;background:#eef3f8}
+.loan-ledger .statement-banner b{display:block;font-size:19px;letter-spacing:.4px}
+.loan-ledger .statement-banner span{display:block;margin-top:5px;font-size:12px;color:#475569}
+.loan-ledger .ledger-summary{grid-template-columns:repeat(3,minmax(0,1fr));margin:12px 0}
+.loan-ledger .ledger-details{min-width:760px}
+.loan-ledger .ledger-details th{width:19%}
+.loan-ledger .ledger-details td{width:31%}
+.loan-ledger .amount{text-align:right;white-space:nowrap}
+@media print{
+  body{background:#fff!important}
+  .loan-ledger{border:0!important;padding:0!important}
+  .loan-ledger .ledger-summary{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .loan-ledger .table-wrap{overflow:visible}
+  .loan-ledger table{min-width:0!important;width:100%;font-size:10px}
+  .loan-ledger th,.loan-ledger td{padding:5px!important;font-size:10px!important}
+  .loan-ledger h2,.loan-ledger h3{break-after:avoid}
+  .loan-ledger tr{break-inside:avoid}
+}
+</style>
 </head><body><div id="app"></div><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script>
 const SB_URL='https://gchmrrdfxoorqmkunxei.supabase.co',SB_KEY='sb_publishable_b68jXTon4erqI0xrAlonWw_wkNGswHe';const db=supabase.createClient(SB_URL,SB_KEY);const contentId='content';let settings=null,currentUser=null,profile=null,classes=[],years=[],terms=[],fees=[],expenseCats=[],students=[],enrollments=[],staffRows=[];const app=document.getElementById('app');
 const esc=s=>String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));const money=n=>'UGX '+Number(n||0).toLocaleString();const today=()=>new Date().toISOString().slice(0,10);const errMsg=e=>e?.message||e?.error_description||'An unexpected error occurred.';
@@ -618,10 +639,66 @@ async function saveExpense(){
 }
 
 async function expenditureRows(){const r=await db.from('expenditures').select('*,expenditure_categories(name)').order('expenditure_date',{ascending:false}).limit(50);return (r.data||[]).map(x=>`<tr><td>${x.expenditure_date}</td><td>${esc(x.voucher_no)}</td><td>${esc(x.expenditure_categories?.name)}</td><td>${esc(x.description)}</td><td>${money(x.amount)}</td><td>${x.is_reversed?'Reversed':'Posted'}</td><td class="no-print">${x.is_reversed?'<span class="small">Reversed</span>':`<button class="secondary" onclick="editExpenditure('${x.id}')">✏️ Edit</button>`}</td></tr>`).join('')}
-async function loansPage(){const r=await db.from('loans').select('*').order('loan_date',{ascending:false});const rows=r.data||[];const totalOriginal=rows.reduce((a,x)=>a+Number(x.original_amount||0),0),totalRepaid=rows.reduce((a,x)=>a+Number(x.amount_repaid||0),0),totalOutstanding=rows.reduce((a,x)=>a+Number(x.outstanding_balance||0),0);content.innerHTML=`<div class="panel"><h2>Loans</h2><div class="grid"><div class="card"><div class="label">Total Loans</div><div class="num">${money(totalOriginal)}</div></div><div class="card"><div class="label">Total Repaid</div><div class="num">${money(totalRepaid)}</div></div><div class="card"><div class="label">Current Loan Balance</div><div class="num">${money(totalOutstanding)}</div></div></div><div class="form"><input id="loanRef" placeholder="Loan reference"><input id="lender" placeholder="Lender"><input id="loanAmt" type="number" placeholder="Original amount"><input id="loanDate" type="date" value="${today()}"><input id="loanPurpose" placeholder="Purpose"><input id="loanTerms" placeholder="Repayment terms"></div><div class="actions"><button class="primary" id="loanSaveBtn" onclick="saveLoan()">Save Loan</button><button class="secondary" id="loanCancelBtn" style="display:none" onclick="loansPage()">Cancel Edit</button></div><div class="table-wrap"><table><tr><th>Ref</th><th>Lender</th><th>Original</th><th>Repaid</th><th>Outstanding</th><th>Status</th><th>Action</th></tr>${rows.map(x=>`<tr><td>${esc(x.loan_ref)}</td><td>${esc(x.lender)}</td><td>${money(x.original_amount)}</td><td>${money(x.amount_repaid)}</td><td>${money(x.outstanding_balance)}</td><td>${esc(x.status)}</td><td><button onclick="repayLoan('${x.id}')">Repay</button> <button class="light" onclick="editLoan('${x.id}')">Edit</button></td></tr>`).join('')}</table></div></div>`}
+async function loansPage(){const r=await db.from('loans').select('*').order('loan_date',{ascending:false});const rows=r.data||[];const totalOriginal=rows.reduce((a,x)=>a+Number(x.original_amount||0),0),totalRepaid=rows.reduce((a,x)=>a+Number(x.amount_repaid||0),0),totalOutstanding=rows.reduce((a,x)=>a+Number(x.outstanding_balance||0),0);content.innerHTML=`<div class="panel"><h2>Loans</h2><div class="grid"><div class="card"><div class="label">Total Loans</div><div class="num">${money(totalOriginal)}</div></div><div class="card"><div class="label">Total Repaid</div><div class="num">${money(totalRepaid)}</div></div><div class="card"><div class="label">Current Loan Balance</div><div class="num">${money(totalOutstanding)}</div></div></div><div class="form"><input id="loanRef" placeholder="Loan reference"><input id="lender" placeholder="Lender"><input id="loanAmt" type="number" placeholder="Original amount"><input id="loanDate" type="date" value="${today()}"><input id="loanPurpose" placeholder="Purpose"><input id="loanTerms" placeholder="Repayment terms"></div><div class="actions"><button class="primary" id="loanSaveBtn" onclick="saveLoan()">Save Loan</button><button class="secondary" id="loanCancelBtn" style="display:none" onclick="loansPage()">Cancel Edit</button></div><div class="table-wrap"><table><tr><th>Ref</th><th>Lender</th><th>Original</th><th>Repaid</th><th>Outstanding</th><th>Status</th><th>Action</th></tr>${rows.map(x=>`<tr><td>${esc(x.loan_ref)}</td><td>${esc(x.lender)}</td><td>${money(x.original_amount)}</td><td>${money(x.amount_repaid)}</td><td>${money(x.outstanding_balance)}</td><td>${esc(x.status)}</td><td><button onclick="repayLoan('${x.id}')">Repay</button> <button class="light" onclick="loanLedger('${x.id}')">📒 Ledger</button> <button class="light" onclick="editLoan('${x.id}')">Edit</button></td></tr>`).join('')}</table></div></div>`}
 async function saveLoan(){if(!loanRef.value||!lender.value||!loanAmt.value)return alert('Loan reference, lender and amount required.');const payload={loan_ref:loanRef.value,lender:lender.value,original_amount:+loanAmt.value,loan_date:loanDate.value,purpose:loanPurpose.value,repayment_terms:loanTerms.value};const r=editingLoanId?await db.from('loans').update(payload).eq('id',editingLoanId):await db.from('loans').insert({...payload,amount_repaid:0});if(r.error)alert(errMsg(r.error));else{editingLoanId=null;dataCacheAt=0;loansPage()}}
 async function editLoan(id){const r=await db.from('loans').select('*').eq('id',id).single();if(r.error)return alert(errMsg(r.error));const x=r.data;editingLoanId=id;loanRef.value=x.loan_ref||'';lender.value=x.lender||'';loanAmt.value=x.original_amount||'';loanDate.value=x.loan_date||today();loanPurpose.value=x.purpose||'';loanTerms.value=x.repayment_terms||'';document.getElementById('loanSaveBtn').textContent='Save Loan Corrections';document.getElementById('loanCancelBtn').style.display='inline-block';window.scrollTo({top:0,behavior:'smooth'})}
 async function repayLoan(id){const loan=await db.from('loans').select('outstanding_balance').eq('id',id).single();if(loan.error)return alert(errMsg(loan.error));const amt=prompt(`Repayment amount (UGX) — current balance ${money(loan.data.outstanding_balance)}:`);if(!amt||+amt<=0)return;if(+amt>Number(loan.data.outstanding_balance||0))return alert('Repayment cannot exceed the current loan balance.');const ref='LR-'+Date.now();const r=await db.from('loan_repayments').insert({loan_id:id,repayment_ref:ref,repayment_date:today(),amount:+amt,payment_method:'Cash',is_reversed:false});if(r.error)alert(errMsg(r.error));else {dataCacheAt=0;loansPage()}}
+
+async function loanLedger(id){
+  const [loanR,repayR]=await Promise.all([
+    db.from('loans').select('*').eq('id',id).single(),
+    db.from('loan_repayments').select('*').eq('loan_id',id).order('repayment_date',{ascending:true}).order('created_at',{ascending:true})
+  ]);
+  if(loanR.error)return alert(errMsg(loanR.error));
+  if(repayR.error)return alert('Could not load loan repayment history: '+errMsg(repayR.error));
+  const loan=loanR.data, repayments=repayR.data||[];
+  let running=Number(loan.original_amount||0), totalRepaid=0;
+  const history=repayments.map(p=>{
+    const amount=Number(p.amount||0);
+    const reversed=!!p.is_reversed;
+    if(!reversed){running=Math.max(0,running-amount);totalRepaid+=amount;}
+    return `<tr><td>${esc(p.repayment_date||'—')}</td><td>${esc(p.repayment_ref||'—')}</td><td>${esc(p.payment_method||'—')}</td><td class="amount">${money(amount)}</td><td class="amount">${reversed?'—':money(running)}</td><td>${reversed?'<span class="pill" style="background:#fee2e2;color:#991b1b">Reversed</span>':'<span class="pill">Posted</span>'}</td></tr>`;
+  }).join('');
+  const recordedOutstanding=Number(loan.outstanding_balance??(Number(loan.original_amount||0)-totalRepaid));
+  const effectiveBalance=Number.isFinite(recordedOutstanding)?recordedOutstanding:Math.max(0,Number(loan.original_amount||0)-totalRepaid);
+  content.innerHTML=`<div class="panel loan-ledger">
+    <div class="actions no-print">
+      <button class="secondary" onclick="loansPage()">← Back to Loans</button>
+      <button onclick="window.print()">🖨️ Print / Save PDF</button>
+    </div>
+    <div class="statement-banner"><b>${esc(settings?.school_name||'Blessed Junior School – Ssambwe')}</b><span>LOAN LEDGER CARD · Provider reconciliation and accountability record</span></div>
+    <h2>Loan Ledger — ${esc(loan.loan_ref||'No reference')}</h2>
+    <div class="grid ledger-summary">
+      <div class="card"><div class="label">Original Principal Recorded</div><div class="num">${money(loan.original_amount)}</div></div>
+      <div class="card"><div class="label">Repayments Posted (not reversed)</div><div class="num">${money(totalRepaid)}</div></div>
+      <div class="card"><div class="label">Outstanding Balance (system record)</div><div class="num">${money(effectiveBalance)}</div></div>
+    </div>
+    <h3>Loan Details</h3>
+    <div class="table-wrap"><table class="ledger-details">
+      <tr><th>Loan Reference</th><td>${esc(loan.loan_ref||'—')}</td><th>Loan Provider / Lender</th><td>${esc(loan.lender||'—')}</td></tr>
+      <tr><th>Loan Date</th><td>${esc(loan.loan_date||'—')}</td><th>Status</th><td>${esc(loan.status||'—')}</td></tr>
+      <tr><th>Purpose</th><td>${esc(loan.purpose||'—')}</td><th>Repayment Terms</th><td>${esc(loan.repayment_terms||'—')}</td></tr>
+    </table></div>
+    <h3>Repayment History</h3>
+    <p class="small">Running balance is calculated from the recorded original amount less posted repayments in date order. Reversed repayments are shown for audit but are not deducted.</p>
+    <div class="table-wrap"><table class="continuous-account-table">
+      <thead><tr><th>Repayment Date</th><th>Receipt / Reference</th><th>Payment Method</th><th class="amount">Amount Paid (UGX)</th><th class="amount">Running Balance (UGX)</th><th>Status</th></tr></thead>
+      <tbody>${history||'<tr><td colspan="6">No repayment records have been found for this loan.</td></tr>'}</tbody>
+      <tfoot><tr class="total"><th colspan="3">Total Posted Repayments</th><th class="amount">${money(totalRepaid)}</th><th class="amount">${money(Math.max(0,Number(loan.original_amount||0)-totalRepaid))}</th><th>Balance after posted repayments</th></tr></tfoot>
+    </table></div>
+    <h3>Provider Reconciliation</h3>
+    <p>Use this section when comparing the school ledger with the lender's statement. Enter the lender's figure on the printout and record the reason for any difference.</p>
+    <div class="table-wrap"><table class="ledger-details">
+      <tr><th>Provider statement date</th><td>________________________________</td><th>Balance according to provider (UGX)</th><td>________________________________</td></tr>
+      <tr><th>Balance according to school system (UGX)</th><td>${money(effectiveBalance)}</td><th>Difference to investigate (UGX)</th><td>________________________________</td></tr>
+      <tr><th>Reconciliation notes / action required</th><td colspan="3" style="height:65px">________________________________________________________________________________</td></tr>
+      <tr><th>Prepared by</th><td>________________________________</td><th>Checked / approved by</th><td>________________________________</td></tr>
+    </table></div>
+    <p class="small">Audit note: This ledger uses the loan and repayment records currently stored in the system. Reversed repayments remain visible for traceability. Interest, charges, maturity date, and saved provider statement balances are not shown as separate fields because this version's loan records do not expose those fields.</p>
+    <div class="actions no-print"><button onclick="window.print()">🖨️ Print / Save PDF</button><button class="secondary" onclick="loansPage()">Back to Loans</button></div>
+  </div>`;
+}
+
 async function eventsPage(){const r=await db.from('events').select('*').order('event_date',{ascending:false});const gallery=await galleryFiles();content.innerHTML=`<div class="panel"><h2>Events</h2><div class="actions no-print"><button class="primary" onclick="openEventUpload()">📷 Add Event / Group Photos</button><input id="galleryFiles" type="file" accept="image/*" multiple style="position:absolute;left:-9999px;width:1px" onchange="uploadDashboardPictures()"><input id="replaceGalleryFile" type="file" accept="image/*" style="position:absolute;left:-9999px;width:1px" onchange="handleGalleryReplace()"></div><h3>Dashboard Event & Group Photo Gallery</h3><p class="small">The first four pictures rotate automatically on the dashboard. You can replace or remove pictures here and add new ones at any time.</p><div class="gallery-admin">${gallery.map(x=>`<div class="gallery-item"><img src="${esc(x.url)}" alt="Event or group photo"><div class="actions no-print"><button class="light" onclick="replaceEventPhoto('${esc(x.name)}')">✏️ Replace</button><button class="danger" onclick="deleteEventPhoto('${esc(x.name)}')">🗑️ Remove</button></div></div>`).join('')||'<div class="notice">No event/group photos uploaded yet.</div>'}</div><hr><div class="form"><input id="eventName" placeholder="Event name (Speech Day, Graduation, Sports Day)"><input id="eventDate" type="date"><input id="eventDesc" class="full" placeholder="Description"></div><div class="actions"><button class="primary" onclick="saveEvent()">Save Event</button></div><div class="table-wrap"><table><tr><th>Date</th><th>Event</th><th>Description</th><th>Expenses</th></tr>${(r.data||[]).map(x=>`<tr><td>${x.event_date||''}</td><td>${esc(x.name)}</td><td>${esc(x.description)}</td><td><button onclick="addEventExpense('${x.id}')">Add Expense</button></td></tr>`).join('')}</table></div></div>`}
 async function saveEvent(){if(!eventName.value.trim())return alert('Event name required.');const r=await db.from('events').insert({name:eventName.value.trim(),event_date:eventDate.value||null,description:eventDesc.value});if(r.error)alert(errMsg(r.error));else eventsPage()}
 async function addEventExpense(id){const d=prompt('Expense description:');const a=prompt('Amount UGX:');if(!d||!a)return;const r=await db.from('event_expenses').insert({event_id:id,description:d,amount:+a,voucher_no:'EVT-'+Date.now(),expenditure_date:today(),is_reversed:false});if(r.error)alert(errMsg(r.error));else eventsPage()}
