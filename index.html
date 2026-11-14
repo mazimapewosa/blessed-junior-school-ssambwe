@@ -880,6 +880,40 @@ async function notificationRows(){const r=await db.from('notification_messages')
 /* Academic section — additive module; existing school workflows remain unchanged. */
 const academicGrades=[{grade:'D1',min:85,max:100},{grade:'D2',min:80,max:84},{grade:'C3',min:75,max:79},{grade:'C4',min:70,max:74},{grade:'C5',min:65,max:69},{grade:'C6',min:60,max:64},{grade:'P7',min:55,max:59},{grade:'P8',min:50,max:54},{grade:'F9',min:0,max:49}];
 function academicGrade(mark,max){const pct=Number(max)>0?Number(mark)*100/Number(max):0;return academicGrades.find(g=>pct>=g.min&&pct<=g.max)?.grade||'—'}
+  function academicGradeForClass(mark,max,className){
+  const pct=Number(max)>0?Number(mark)*100/Number(max):0;
+  const early=/baby|middle|top/i.test(String(className||''));
+  if(early){
+    return pct>=90?'A':pct>=70?'B':'C';
+  }
+  return academicGrade(mark,max);
+}
+
+function academicGradePoint(mark,max){
+  const grade=academicGrade(mark,max);
+  const points=Number(String(grade).slice(1));
+  return Number.isFinite(points)&&points>=1&&points<=9?points:0;
+}
+  function academicDivision(aggregate){
+  const a=Number(aggregate);
+  if(!Number.isFinite(a)||a<4)return '—';
+  if(a<=12)return 'Division 1';
+  if(a<=24)return 'Division 2';
+  if(a<=29)return 'Division 3';
+  if(a<=32)return 'Division 4';
+  return 'U';
+}
+
+function academicPromotionDecision(aggregate,termName){
+  if(String(termName||'').toLowerCase().replace(/\s+/g,' ').trim()!=='term three'){
+    return 'Not applicable — Term Three only';
+  }
+  const a=Number(aggregate);
+  if(!Number.isFinite(a)||a<4)return 'Pending results';
+  if(a<=24)return 'Promoted to the next class';
+  if(a<=29)return 'Promoted on probation';
+  return 'Advised to repeat the class';
+}
 function academicYearDefault(){return years.find(y=>y.is_current)||years.find(y=>Number(y.year)===Number(settings?.current_academic_year))||years[0]}
 function academicTermDefault(yearId){const ts=terms.filter(t=>!yearId||t.academic_year_id===yearId);const named=String(settings?.current_term||'').toLowerCase();return ts.find(t=>named&&String(t.name||'').toLowerCase()===named)||ts.find(t=>(!t.start_date||t.start_date<=today())&&(!t.end_date||t.end_date>=today()))||ts[0]}
 function academicPeriodControls(){const y=academicYearDefault(),t=academicTermDefault(y?.id);return `<div class="form"><label>Academic Year<select id="acadYear" onchange="academicPeriodChanged();refreshAcademicSubjectChoices()">${years.map(a=>`<option value="${a.id}" ${a.id===y?.id?'selected':''}>${esc(a.year)}</option>`).join('')}</select></label><label>Term<select id="acadTerm" onchange="refreshAcademicSubjectChoices()">${terms.filter(a=>!y||a.academic_year_id===y.id).map(a=>`<option value="${a.id}" ${a.id===t?.id?'selected':''}>${esc(a.name)}</option>`).join('')}</select></label><label>Class<select id="acadClass" onchange="refreshAcademicSubjectChoices()">${classOpts()}</select></label><label>Stream<input id="acadStream" placeholder="e.g. A"></label></div>`}
@@ -951,7 +985,7 @@ async function previewAcademicCsv(){const file=document.getElementById('academic
 async function savePendingAcademicCsvRows(){try{await academicSaveRows(window.pendingAcademicCsvRows||[])}catch(e){document.getElementById('academicMsg').innerHTML=`<div class="notice err">${esc(errMsg(e))}</div>`}}
 async function loadAcademicEntryForm(){const cls=document.getElementById('acadClass')?.value;if(!cls)return alert('Select a class first.');const list=students.filter(s=>studentClassId(s.id)===cls);document.getElementById('academicWork').innerHTML=`<h3>Enter Marks</h3><div class="form"><label>Configured subject<select id="manualSubjectChoice"><option value="">Choose a configured subject</option>${academicClassSubjects.map(x=>`<option value="${esc(x.subject)}">${esc(x.subject)}</option>`).join('')}</select></label><label>Or enter subject manually<input id="manualSubject" placeholder="Use only if not configured"></label><label>Maximum mark<input id="manualMax" type="number" min="1" value="100"></label><label>Teacher initials<input id="manualInitials" placeholder="e.g. TJK"></label></div><div class="table-wrap"><table><tr><th>Admission No.</th><th>Student</th><th>Marks</th><th>Comment</th></tr>${list.map(s=>`<tr data-student="${s.id}"><td>${esc(s.admission_no)}</td><td>${esc(s.full_name)}</td><td><input type="number" min="0" max="100" class="manualMarks" data-id="${s.id}" style="min-width:90px" placeholder="Marks"></td><td><input class="manualComment" data-id="${s.id}" placeholder="Optional comment"></td></tr>`).join('')}</table></div><div class="actions"><button class="primary" onclick="saveManualAcademicMarks()">Save Marks</button></div>`}
 async function saveManualAcademicMarks(){const subject=(document.getElementById('manualSubjectChoice')?.value||document.getElementById('manualSubject')?.value||'').trim(),max=Number(document.getElementById('manualMax')?.value||100),initials=document.getElementById('manualInitials')?.value.trim()||'';if(!subject)return alert('Enter the subject name.');const rows=[...document.querySelectorAll('.manualMarks')].filter(x=>x.value!=='').map(x=>({admission_no:students.find(s=>s.id===x.dataset.id)?.admission_no,subject,marks:x.value,max_marks:max,comment:document.querySelector(`.manualComment[data-id="${x.dataset.id}"]`)?.value||'',initials}));try{await academicSaveRows(rows)}catch(e){document.getElementById('academicMsg').innerHTML=`<div class="notice err">${esc(errMsg(e))}</div>`}}
-async function loadAcademicResults(){const y=document.getElementById('acadYear')?.value,t=document.getElementById('acadTerm')?.value,c=document.getElementById('acadClass')?.value;let q=db.from('academic_results').select('*').eq('academic_year_id',y).eq('term_id',t).order('subject').order('student_id');if(c)q=q.eq('class_id',c);const r=await q;if(r.error){document.getElementById('academicWork').innerHTML=`<div class="notice err">${esc(errMsg(r.error))}<br>Academic database tables may not have been created yet. Run the supplied academic_setup.sql file in Supabase SQL Editor.</div>`;return}document.getElementById('academicWork').innerHTML=`<h3>Saved Results</h3><div class="table-wrap"><table><tr><th>Admission No.</th><th>Student</th><th>Subject</th><th>Marks</th><th>Maximum</th><th>Grade</th><th>Comment</th></tr>${(r.data||[]).map(x=>{const s=students.find(z=>z.id===x.student_id);return `<tr><td>${esc(s?.admission_no||'')}</td><td>${esc(s?.full_name||'')}</td><td>${esc(x.subject)}</td><td>${x.marks}</td><td>${x.max_marks}</td><td>${academicGrade(x.marks,x.max_marks)}</td><td>${esc(x.comment||'')}</td></tr>`}).join('')||'<tr><td colspan="7">No results for this selection.</td></tr>'}</table></div>`}
+async function loadAcademicResults(){const y=document.getElementById('acadYear')?.value,t=document.getElementById('acadTerm')?.value,c=document.getElementById('acadClass')?.value;let q=db.from('academic_results').select('*').eq('academic_year_id',y).eq('term_id',t).order('subject').order('student_id');if(c)q=q.eq('class_id',c);const r=await q;if(r.error){document.getElementById('academicWork').innerHTML=`<div class="notice err">${esc(errMsg(r.error))}<br>Academic database tables may not have been created yet. Run the supplied academic_setup.sql file in Supabase SQL Editor.</div>`;return}document.getElementById('academicWork').innerHTML=`<h3>Saved Results</h3><div class="table-wrap"><table><tr><th>Admission No.</th><th>Student</th><th>Subject</th><th>Marks</th><th>Maximum</th><th>Grade</th><th>Comment</th></tr>${(r.data||[]).map(x=>{const s=students.find(z=>z.id===x.student_id);return `<tr><td>${esc(s?.admission_no||'')}</td><td>${esc(s?.full_name||'')}</td><td>${esc(x.subject)}</td><td>${x.marks}</td><td>${x.max_marks}</td><td>${academicGradeForClass(x.marks,x.max_marks,cl?.name)}</td><td>${esc(x.comment||'')}</td></tr>`}).join('')||'<tr><td colspan="7">No results for this selection.</td></tr>'}</table></div>`}
 
 function openReportForPrint(html,title,targetWindow=null){
  const doc=`<!doctype html><html><head><meta charset="utf-8"><title>${title}</title><style>
@@ -1007,8 +1041,50 @@ function automaticHeadComment(avg){return avg>=80?'Congratulations. Continue str
 async function buildAcademicReportCard(sid,y,t){
  const st=students.find(x=>x.id===sid),en=enrollments.find(x=>x.student_id===sid&&x.status==='active'),cl=classes.find(x=>x.id===(en?.class_id||studentClassId(sid))),yr=years.find(x=>x.id===y),tr=terms.find(x=>x.id===t);
  const r=await db.from('academic_results').select('*').eq('student_id',sid).eq('academic_year_id',y).eq('term_id',t).order('subject');if(r.error)throw r.error;const rows=r.data||[];if(!rows.length)return null;
- const all=await db.from('academic_results').select('student_id,subject,marks,max_marks,class_id,stream').eq('academic_year_id',y).eq('term_id',t).eq('class_id',cl?.id||'');if(all.error)throw all.error;
- const totals={};(all.data||[]).forEach(x=>{totals[x.student_id]??={total:0,max:0};totals[x.student_id].total+=Number(x.marks||0);totals[x.student_id].max+=Number(x.max_marks||100)});const rank=Object.entries(totals).sort((a,b)=>(b[1].max?b[1].total/b[1].max:0)-(a[1].max?a[1].total/a[1].max:0));const pos=rank.findIndex(x=>x[0]===sid)+1;
+ const all=await db.from('academic_results')
+  .select('student_id,subject,marks,max_marks,class_id,stream')
+  .eq('academic_year_id',y)
+  .eq('term_id',t)
+  .eq('class_id',cl?.id||'');
+if(all.error)throw all.error;
+
+const isEarlyClass=/baby|middle|top/i.test(String(cl?.name||''));
+
+const totals={};
+(all.data||[]).forEach(x=>{
+  totals[x.student_id]??={aggregate:0,marks:0,max:0};
+  if(isEarlyClass){
+    totals[x.student_id].marks+=Number(x.marks||0);
+    totals[x.student_id].max+=Number(x.max_marks||100);
+  }else{
+    totals[x.student_id].aggregate+=academicGradePoint(x.marks,x.max_marks);
+  }
+});
+
+const rank=Object.entries(totals)
+  .filter(x=>isEarlyClass?x[1].max>0:x[1].aggregate>0)
+  .sort((a,b)=>isEarlyClass
+    ?(b[1].marks/b[1].max)-(a[1].marks/a[1].max)
+    :a[1].aggregate-b[1].aggregate
+  );
+
+const aggregate=isEarlyClass?0:rows.reduce(
+  (sum,x)=>sum+academicGradePoint(x.marks,x.max_marks),0
+);
+
+const ownMarks=rows.reduce((sum,x)=>sum+Number(x.marks||0),0);
+const ownMax=rows.reduce((sum,x)=>sum+Number(x.max_marks||100),0);
+const ownAverage=ownMax?ownMarks/ownMax:0;
+
+const pos=isEarlyClass
+  ?rank.filter(x=>x[1].marks/x[1].max>ownAverage).length+1
+  :aggregate>0
+    ?rank.filter(x=>x[1].aggregate<aggregate).length+1
+    :0;
+
+const classEnrolment=students.filter(
+  s=>studentClassId(s.id)===cl?.id
+).length;
  const total=rows.reduce((a,x)=>a+Number(x.marks||0),0),max=rows.reduce((a,x)=>a+Number(x.max_marks||100),0),avg=max?total*100/max:0;
  let balanceValue=null;
  if(en){
@@ -1023,13 +1099,23 @@ async function buildAcademicReportCard(sid,y,t){
    }
  }
  const balance=balanceValue===null?'Not available':money(Math.max(0,balanceValue));
- const name=esc(st?.full_name||''),details={school:settings.school_name||'Blessed Junior School – Ssambwe',student:st?.full_name||'',admission_no:st?.admission_no||'',class:cl?.name||'',term:tr?.name||'',year:yr?.year||'',total,average:avg.toFixed(2)+'%',position:pos+'/'+rank.length,fees_balance:balance,subjects:rows.map(x=>({subject:x.subject,marks:x.marks,grade:academicGrade(x.marks,x.max_marks)}))};
+ const name=esc(st?.full_name||''),details={school:settings.school_name||'Blessed Junior School – Ssambwe',student:st?.full_name||'',admission_no:st?.admission_no||'',class:cl?.name||'',term:tr?.name||'',year:yr?.year||'',total,average:avg.toFixed(2)+'%',position:pos+'/'+classEnrolment,
+aggregate:isEarlyClass?'Not applicable':aggregate,
+division:isEarlyClass?'Not applicable':academicDivision(aggregate),
+promotion:isEarlyClass?'Not applicable':academicPromotionDecision(aggregate,tr?.name),fees_balance:balance,subjects:rows.map(x=>({subject:x.subject,marks:x.marks,grade:academicGradeForClass(x.marks,x.max_marks,cl?.name)}))};
  const qr='https://api.qrserver.com/v1/create-qr-code/?size=130x130&data='+encodeURIComponent(JSON.stringify(details));
  const logo=`<img src="${esc(settings?.logo_url||DEFAULT_SCHOOL_LOGO)}" alt="Blessed Junior School logo" style="display:block;width:82px;height:82px;object-fit:contain" onerror="this.style.display='none'">`;
  const photo=st?.photo_url
    ?`<img src="${esc(st.photo_url)}" alt="Student photograph" style="display:block;width:88px;height:105px;object-fit:cover;border:1px solid #777">`
    :`<div style="width:88px;height:105px;border:1px solid #777;display:flex;align-items:center;justify-content:center;text-align:center;font-size:11px;color:#555">Student<br>Photo</div>`;
- return `<div class="academic-report" style="max-width:900px;margin:12px auto;padding:18px;border:2px solid #000080;background:#fff;color:#172033;page-break-after:always"><div style="display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:90px">${logo}<div style="text-align:center;flex:1"><h1 style="color:#000080;margin:0">${esc(settings.school_name||'BLESSED JUNIOR SCHOOL – SSAMBWE')}</h1><b>END OF ${esc(String(tr?.name||'TERM').toUpperCase())} ${esc(yr?.year||'')} ACADEMIC REPORT</b><div>GOD CARES</div></div>${photo}</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0"><div><b>Name:</b> ${name}</div><div><b>Admission No:</b> ${esc(st?.admission_no||'')}</div><div><b>Class:</b> ${esc(cl?.name||'')}</div><div><b>Stream:</b> ${esc(rows[0]?.stream||'')}</div><div><b>Term:</b> ${esc(tr?.name||'')} ${esc(yr?.year||'')}</div><div><b>Term Begins:</b> ${esc(tr?.start_date||'Not set')}</div></div><h3 style="text-align:center">Academic Performance</h3><table style="width:100%;border-collapse:collapse"><tr><th>Subject</th><th>Marks</th><th>Grade</th><th>Teacher Comment</th></tr>${rows.map(x=>`<tr><td>${esc(x.subject)}</td><td>${x.marks}/${x.max_marks}</td><td>${academicGrade(x.marks,x.max_marks)}</td><td>${esc(x.comment||'')}</td></tr>`).join('')}<tr><th>Total</th><th>${total}/${max}</th><th>Average ${avg.toFixed(2)}%</th><th>Position ${pos||'—'} / ${rank.length}</th></tr></table><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:12px"><div><b>Class Teacher:</b> ${automaticTeacherComment(avg)}</div><div><b>DOS:</b> ${automaticDosComment(avg)}</div><div><b>Headteacher:</b> ${automaticHeadComment(avg)}</div><div><b>Fees Balance:</b> ${balance}</div></div><div style="display:flex;align-items:end;justify-content:space-between;margin-top:14px"><small>Grading: D1 85–100 · D2 80–84 · C3 75–79 · C4 70–74 · C5 65–69 · C6 60–64 · P7 55–59 · P8 50–54 · F9 0–49</small><div style="text-align:center"><img src="${qr}" width="100" height="100"><div style="font-size:10px">Scan for report details</div></div></div></div>`;
+ return `<div class="academic-report" style="max-width:900px;margin:12px auto;padding:18px;border:2px solid #000080;background:#fff;color:#172033;page-break-after:always"><div style="display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:90px">${logo}<div style="text-align:center;flex:1"><h1 style="color:#000080;margin:0">${esc(settings.school_name||'BLESSED JUNIOR SCHOOL – SSAMBWE')}</h1><b>END OF ${esc(String(tr?.name||'TERM').toUpperCase())} ${esc(yr?.year||'')} ACADEMIC REPORT</b><div>GOD CARES</div></div>${photo}</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0"><div><b>Name:</b> ${name}</div><div><b>Admission No:</b> ${esc(st?.admission_no||'')}</div><div><b>Class:</b> ${esc(cl?.name||'')}</div><div><b>Stream:</b> ${esc(rows[0]?.stream||'')}</div><div><b>Term:</b> ${esc(tr?.name||'')} ${esc(yr?.year||'')}</div><div><b>Term Begins:</b> ${esc(tr?.start_date||'Not set')}</div></div><h3 style="text-align:center">Academic Performance</h3>
+${isEarlyClass?'':`<div style="border:1px solid #000080;padding:10px;margin:10px 0">
+<b>Aggregate:</b> ${aggregate}
+&nbsp; | &nbsp; <b>Division:</b> ${academicDivision(aggregate)}
+<br><b>Promotion Decision:</b> ${academicPromotionDecision(aggregate,tr?.name)}
+</div>`}<table style="width:100%;border-collapse:collapse"><tr><th>Subject</th><th>Marks</th><th>Grade</th><th>Teacher Comment</th></tr>${rows.map(x=>`<tr><td>${esc(x.subject)}</td><td>${x.marks}/${x.max_marks}</td><td>${academicGrade(x.marks,x.max_marks)}</td><td>${esc(x.comment||'')}</td></tr>`).join('')}<tr><th>Total</th><th>${total}/${max}</th><th>Average ${avg.toFixed(2)}%</th><th>Position ${pos||'—'} / ${classEnrolment}</th></tr></table><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:12px"><div><b>Class Teacher:</b> ${automaticTeacherComment(avg)}</div><div><b>DOS:</b> ${automaticDosComment(avg)}</div><div><b>Headteacher:</b> ${automaticHeadComment(avg)}</div><div><b>Fees Balance:</b> ${balance}</div></div><div style="display:flex;align-items:end;justify-content:space-between;margin-top:14px"><small>${isEarlyClass
+  ? 'Grading: A 90–100 · B 70–89 · C below 70'
+  : 'Grading: D1 85–100 · D2 80–84 · C3 75–79 · C4 70–74 · C5 65–69 · C6 60–64 · P7 55–59 · P8 50–54 · F9 0–49'}</small><div style="text-align:center"><img src="${qr}" width="100" height="100"><div style="font-size:10px">Scan for report details</div></div></div></div>`;
 }
 async function generateAcademicReportCard(){const sid=document.getElementById('reportStudent')?.value,y=document.getElementById('acadYear')?.value,t=document.getElementById('acadTerm')?.value;if(!sid||!y||!t)return alert('Select a student, academic year and term.');try{const html=await buildAcademicReportCard(sid,y,t);if(!html)return alert('No academic results saved for this pupil in the selected term.');document.getElementById('academicReport').innerHTML=html;window.academicReportHtml=html}catch(e){alert('Could not prepare report card: '+errMsg(e))}}
 async function printWholeClassReports(){const cid=document.getElementById('acadClass')?.value||document.getElementById('templateClass')?.value,y=document.getElementById('acadYear')?.value||document.getElementById('templateYear')?.value,t=document.getElementById('acadTerm')?.value||document.getElementById('templateTerm')?.value;if(!cid||!y||!t)return alert('Select class, academic year and term first.');const roster=students.filter(s=>studentClassId(s.id)===cid).sort((a,b)=>String(a.full_name||'').localeCompare(String(b.full_name||'')));if(!roster.length)return alert('No students found in this class.');let printWindow=null;try{printWindow=window.open('about:blank','_blank')}catch(e){}const reports=[];try{for(const st of roster){const h=await buildAcademicReportCard(st.id,y,t);if(h)reports.push(h)}if(!reports.length){if(printWindow)printWindow.close();return alert('No saved results were found for this class and term.')}openReportForPrint(reports.join(''),(classes.find(c=>c.id===cid)?.name||'Class')+'_Report_Cards',printWindow);}catch(e){if(printWindow)printWindow.close();alert('Class reports could not be prepared: '+errMsg(e))}}
